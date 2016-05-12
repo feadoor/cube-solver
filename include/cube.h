@@ -15,16 +15,16 @@
 /******************************************************************************
 * Constants
 ******************************************************************************/
-enum cube_face_t   {FACE_U, FACE_L, FACE_F, FACE_R, FACE_B, FACE_D};
-enum cube_turn_t   {TURN_CW = 1, TURN_2, TURN_CCW};
+enum cube_face_t {FACE_U, FACE_L, FACE_F, FACE_R, FACE_B, FACE_D};
+enum cube_turn_t {TURN_CW = 1, TURN_2, TURN_CCW};
 
-enum {EDGE_UF, EDGE_UL, EDGE_UB, EDGE_UR, 
-      EDGE_FR, EDGE_FL, EDGE_BL, EDGE_BR,
-      EDGE_DF, EDGE_DL, EDGE_DB, EDGE_DR};
-enum {CORNER_URF, CORNER_UFL, CORNER_ULB, CORNER_UBR, 
-      CORNER_DFR, CORNER_DLF, CORNER_DBL, CORNER_DRB};
-enum {TWIST_NONE, TWIST_CW, TWIST_CCW};
-enum {FLIP_NONE, FLIP_FLIP};
+enum             {EDGE_UF, EDGE_UL, EDGE_UB, EDGE_UR, 
+                  EDGE_FR, EDGE_FL, EDGE_BL, EDGE_BR,
+                  EDGE_DF, EDGE_DL, EDGE_DB, EDGE_DR};
+enum             {CORNER_URF, CORNER_UFL, CORNER_ULB, CORNER_UBR, 
+                  CORNER_DFR, CORNER_DLF, CORNER_DBL, CORNER_DRB};
+enum             {TWIST_NONE, TWIST_CW, TWIST_CCW};
+enum             {FLIP_NONE, FLIP_FLIP};
 
 /******************************************************************************
 * Cube class declarations
