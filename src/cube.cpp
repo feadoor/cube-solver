@@ -384,8 +384,3 @@ int Cube::coord_fb_sorted()
     std::vector<int> edges = {EDGE_UR, EDGE_UL, EDGE_DL, EDGE_DR};
     return coord_slice_sorted(edges);
 }
-
-int main()
-{
-    return 0;
-}
