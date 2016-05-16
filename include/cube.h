@@ -15,16 +15,16 @@
 /******************************************************************************
 * Constants
 ******************************************************************************/
-enum cube_face_t {FACE_U, FACE_L, FACE_F, FACE_R, FACE_B, FACE_D};
-enum cube_turn_t {TURN_CW = 1, TURN_2, TURN_CCW};
-
-enum             {EDGE_UF, EDGE_UL, EDGE_UB, EDGE_UR, 
-                  EDGE_FR, EDGE_FL, EDGE_BL, EDGE_BR,
-                  EDGE_DF, EDGE_DL, EDGE_DB, EDGE_DR};
-enum             {CORNER_URF, CORNER_UFL, CORNER_ULB, CORNER_UBR, 
-                  CORNER_DFR, CORNER_DLF, CORNER_DBL, CORNER_DRB};
-enum             {TWIST_NONE, TWIST_CW, TWIST_CCW};
-enum             {FLIP_NONE, FLIP_FLIP};
+enum {MOVE_U, MOVE_U2, MOVE_UP, MOVE_L, MOVE_L2, MOVE_LP,
+      MOVE_F, MOVE_F2, MOVE_FP, MOVE_R, MOVE_R2, MOVE_RP,
+      MOVE_B, MOVE_B2, MOVE_BP, MOVE_D, MOVE_D2, MOVE_DP};
+enum {EDGE_UF, EDGE_UL, EDGE_UB, EDGE_UR, 
+      EDGE_FR, EDGE_FL, EDGE_BL, EDGE_BR,
+      EDGE_DF, EDGE_DL, EDGE_DB, EDGE_DR};
+enum {CORNER_URF, CORNER_UFL, CORNER_ULB, CORNER_UBR, 
+      CORNER_DFR, CORNER_DLF, CORNER_DBL, CORNER_DRB};
+enum {TWIST_NONE, TWIST_CW, TWIST_CCW};
+enum {FLIP_NONE, FLIP_FLIP};
 
 /******************************************************************************
 * Cube class declarations
@@ -39,7 +39,7 @@ private:
     int coord_slice_sorted(std::vector<int> edges);
 public:
     Cube();
-    void perform_move(cube_face_t face, cube_turn_t turn_dir);
+    void perform_move(int move);
     int coord_corner_orientation();
     int coord_edge_orientation();
     int coord_corner_permutation();

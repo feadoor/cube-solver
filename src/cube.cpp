@@ -20,7 +20,7 @@
 /******************************************************************************
 * Function:  Cube::Cube
 *
-* Purpose:   Instantiates a representation of a Rubik's cube at the cubie level
+* Purpose:   Default constructor for the cubie-level Rubik's cube.
 *
 * Params:    None
 *
@@ -41,15 +41,14 @@ Cube::Cube()
 *
 * Purpose:   Performs a move on this CUbe object
 *
-* Params:    face     - which face is being rotated
-*            turn_dir - is this turn cw, ccw or 180 degrees?
+* Params:    move - which move is being performed.
 *
 * Returns:   Nothing
 *
 * Operation: Update the permutation and orientation of all the pieces according
 *            to the particular move being performed.
 ******************************************************************************/
-void Cube::perform_move(cube_face_t face, cube_turn_t turn_dir)
+void Cube::perform_move(int move)
 {
     // Local variables
     std::vector<int> corners_moved;
@@ -67,48 +66,90 @@ void Cube::perform_move(cube_face_t face, cube_turn_t turn_dir)
     // Switch based on the face being turned to determine which corners and
     // edges are permuted by this move and how the orientations of the pieces
     // are affected.
-    switch (face)
+    switch (move)
     {
-        case FACE_U:
+        case MOVE_U:
+        case MOVE_U2:
+        case MOVE_UP:
             corners_moved = {CORNER_URF, CORNER_UFL, CORNER_ULB, CORNER_UBR};
             edges_moved   = {EDGE_UF, EDGE_UL, EDGE_UB, EDGE_UR};
             corner_twist  = {TWIST_NONE, TWIST_NONE, TWIST_NONE, TWIST_NONE};
             edge_flip     = {FLIP_NONE, FLIP_NONE, FLIP_NONE, FLIP_NONE};
             break;
 
-        case FACE_L:
+        case MOVE_L:
+        case MOVE_L2:
+        case MOVE_LP:
             corners_moved = {CORNER_UFL, CORNER_DLF, CORNER_DBL, CORNER_ULB};
             edges_moved   = {EDGE_UL, EDGE_FL, EDGE_DL, EDGE_BL};
             corner_twist  = {TWIST_CCW, TWIST_CW, TWIST_CCW, TWIST_CW};
             edge_flip     = {FLIP_NONE, FLIP_NONE, FLIP_NONE, FLIP_NONE};
             break;
 
-        case FACE_F:
+        case MOVE_F:
+        case MOVE_F2:
+        case MOVE_FP:
             corners_moved = {CORNER_URF, CORNER_DFR, CORNER_DLF, CORNER_UFL};
             edges_moved   = {EDGE_UF, EDGE_FR, EDGE_DF, EDGE_FL};
             corner_twist  = {TWIST_CCW, TWIST_CW, TWIST_CCW, TWIST_CW};
             edge_flip     = {FLIP_FLIP, FLIP_FLIP, FLIP_FLIP, FLIP_FLIP};
             break;
 
-        case FACE_R:
+        case MOVE_R:
+        case MOVE_R2:
+        case MOVE_RP:
             corners_moved = {CORNER_URF, CORNER_UBR, CORNER_DRB, CORNER_DFR};
             edges_moved   = {EDGE_UR, EDGE_BR, EDGE_DR, EDGE_FR};
             corner_twist  = {TWIST_CW, TWIST_CCW, TWIST_CW, TWIST_CCW};
             edge_flip     = {FLIP_NONE, FLIP_NONE, FLIP_NONE, FLIP_NONE};
             break;
 
-        case FACE_B:
+        case MOVE_B:
+        case MOVE_B2:
+        case MOVE_BP:
             corners_moved = {CORNER_UBR, CORNER_ULB, CORNER_DBL, CORNER_DRB};
             edges_moved   = {EDGE_UB, EDGE_BL, EDGE_DB, EDGE_BR};
             corner_twist  = {TWIST_CW, TWIST_CCW, TWIST_CW, TWIST_CCW};
             edge_flip     = {FLIP_FLIP, FLIP_FLIP, FLIP_FLIP, FLIP_FLIP};
             break;
 
-        case FACE_D:
+        case MOVE_D:
+        case MOVE_D2:
+        case MOVE_DP:
             corners_moved = {CORNER_DFR, CORNER_DRB, CORNER_DBL, CORNER_DLF};
             edges_moved   = {EDGE_DF, EDGE_DR, EDGE_DB, EDGE_DL};
             corner_twist  = {TWIST_NONE, TWIST_NONE, TWIST_NONE, TWIST_NONE};
             edge_flip     = {FLIP_NONE, FLIP_NONE, FLIP_NONE, FLIP_NONE};
+            break;
+    }
+
+    // Work out how far the face has been turned in the clockwise direction
+    int turn_amt;
+    switch (move)
+    {
+        case U:
+        case L:
+        case F:
+        case R:
+        case B:
+        case D:
+            turn_amt = 1;
+            break;
+        case U2:
+        case L2:
+        case F2:
+        case R2:
+        case B2:
+        case D2:
+            turn_amt = 2;
+            break;
+        case UP:
+        case LP:
+        case FP:
+        case RP:
+        case BP:
+        case DP:
+            turn_amt = 3;
             break;
     }
 
@@ -117,12 +158,12 @@ void Cube::perform_move(cube_face_t face, cube_turn_t turn_dir)
     {
         // Permute the corners according to how far we turned the face
         int from = corners_moved[ii];
-        int to   = corners_moved[(ii + turn_dir) % corners_moved.size()];
+        int to   = corners_moved[(ii + turn_amt) % corners_moved.size()];
         new_corner_permutation[to] = corner_permutation[from];
 
         // Calculate the total twist for this corner piece and update it
         int twist = 0;
-        for (int jj = 0; jj < turn_dir; ++jj)
+        for (int jj = 0; jj < turn_amt; ++jj)
         {
             twist += corner_twist[(ii + jj) % corners_moved.size()];
         }
@@ -134,12 +175,12 @@ void Cube::perform_move(cube_face_t face, cube_turn_t turn_dir)
     {
         // Permute the edges according to how far we turned the face
         int from = edges_moved[ii];
-        int to   = edges_moved[(ii + turn_dir) % edges_moved.size()];
+        int to   = edges_moved[(ii + turn_amt) % edges_moved.size()];
         new_edge_permutation[to] = from;
 
         // Calculate the total flip for this edge piece and update it
         int flip = 0;
-        for (int jj = 0; jj < turn_dir; ++jj)
+        for (int jj = 0; jj < turn_amt; ++jj)
         {
             flip += edge_flip[(ii + jj) % edges_moved.size()];
         }
