@@ -11,7 +11,44 @@
 ******************************************************************************/
 #include <algorithm>
 #include <vector>
+
 #include <cube.h>
+
+/******************************************************************************
+* Helper functions
+******************************************************************************/
+
+/******************************************************************************
+* Function:  binom
+*
+* Purpose:   Calculates the value of a binomial coefficient.
+*
+* Params:    n, k - The result we are computing is (n choose k)
+*
+* Returns:   The value of the binomial coefficient (n choose k).
+*
+* Operation: Uses the direct formula n * (n - 1) * ... * (n - k + 1) / k! 
+*            to compute the result.
+******************************************************************************/
+int binom(int n, int k)
+{
+    // Calculate the numerator of the formula
+    int num = 1;
+    for (int ii = 0; ii < k; ++ii)
+    {
+        num *= (n - ii);
+    }
+
+    // Calculate the denominator k!
+    int denom = 1;
+    for (int ii = 2; ii <= k; ++ii)
+    {
+        denom *= ii;
+    }
+
+    // Return the result
+    return num / denom;
+}
 
 /******************************************************************************
 * Cube class implementation
@@ -35,6 +72,30 @@ Cube::Cube()
     edge_permutation   = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
     edge_orientation   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0};
 }
+
+/******************************************************************************
+* Function:  Cube::Cube
+*
+* Purpose:   Constructor for the cubie-level Rubik's cube.
+*
+* Params:    corner_perm   - describes the permutation of the corners
+*            corner_orient - describes the orientation of the corners
+*            edge_perm     - describes the permutation of the edges
+*            edge_orient   - describes the orientation of the edges
+*
+* Returns:   Nothing
+*
+* Operation: Initialises the cube in the given state.
+******************************************************************************/
+Cube::Cube(std::vector<int> corner_perm, std::vector<int> corner_orient,
+           std::vector<int> edge_perm,   std::vector<int> edge_orient)
+{
+    corner_permutation = corner_perm;
+    corner_orientation = corner_orient;
+    edge_permutation   = edge_perm;
+    edge_orientation   = edge_orient;
+}
+
 
 /******************************************************************************
 * Function:  Cube::perform_move
@@ -127,28 +188,28 @@ void Cube::perform_move(int move)
     int turn_amt;
     switch (move)
     {
-        case U:
-        case L:
-        case F:
-        case R:
-        case B:
-        case D:
+        case MOVE_U:
+        case MOVE_L:
+        case MOVE_F:
+        case MOVE_R:
+        case MOVE_B:
+        case MOVE_D:
             turn_amt = 1;
             break;
-        case U2:
-        case L2:
-        case F2:
-        case R2:
-        case B2:
-        case D2:
+        case MOVE_U2:
+        case MOVE_L2:
+        case MOVE_F2:
+        case MOVE_R2:
+        case MOVE_B2:
+        case MOVE_D2:
             turn_amt = 2;
             break;
-        case UP:
-        case LP:
-        case FP:
-        case RP:
-        case BP:
-        case DP:
+        case MOVE_UP:
+        case MOVE_LP:
+        case MOVE_FP:
+        case MOVE_RP:
+        case MOVE_BP:
+        case MOVE_DP:
             turn_amt = 3;
             break;
     }
@@ -211,9 +272,10 @@ void Cube::perform_move(int move)
 int Cube::coord_corner_orientation()
 {
     // Interpret the corner orientation vector as a base-3 number to get the
-    // value of this coordinate
+    // value of this coordinate. Ignore the last entry, since it is determined
+    // by the other values.
     int ret = 0;
-    for (int ii = 0; ii < corner_orientation.size(); ++ii)
+    for (int ii = 0; ii < corner_orientation.size() - 1; ++ii)
     {
         ret = (3 * ret + corner_orientation[ii]);
     }
@@ -237,9 +299,10 @@ int Cube::coord_corner_orientation()
 int Cube::coord_edge_orientation()
 {
     // Interpret the edge orientation vector as a base-2 number to get the
-    // value of this coordinate
+    // value of this coordinate. Ignore the last entry, since it is determined
+    // by the other values.
     int ret = 0;
-    for (int ii = 0; ii < edge_orientation.size(); ++ii)
+    for (int ii = 0; ii < edge_orientation.size() - 1; ++ii)
     {
         ret = (2 * ret + edge_orientation[ii]);
     }
@@ -304,53 +367,31 @@ int Cube::coord_corner_permutation()
 int Cube::coord_slice_sorted(std::vector<int> edges)
 {
     // Local variables n, k.
-    int n = edge_permutation.size() - 1;
+    int n = edge_permutation.size();
     int k = edges.size();
-
-    // Local variable binom which represents the value of (n choose k), and
-    // which will be updated alongside n and k as we progress.
-    int binom = 1;
-    for (int ii = 1; ii <= k; ++ii)
-    {
-        binom *= (n - ii + 1);
-        binom /= ii;
-    }
 
     // The order in which the edges making up this slice appear in the current
     // cube position.
     std::vector<int> order = {};
 
-    // Calculate the lexicographic position of the four positions occupied by
+    // Calculate the lexicographic rank of the four positions occupied by
     // the slice edges.
-    int pos = 0;
-    while (k >= 0)
+    int pos_rank = 0;
+
+    while (n-- > 0)
     {
         int curr_edge = edge_permutation[n];
         if (std::find(edges.begin(), edges.end(), curr_edge) != edges.end())
         {
-            // We've found one of the edges, so update the values of k and of
-            // the binomial coefficient
-            binom *= k--;
-            binom /= (n - k);
-
-            // Store the edge so we know the order in which they appear in the
-            // cube.
-            order.push_back(curr_edge);
+            // We've found one of the slice edges, so update the rank and note
+            // the order in which we found this edge.
+            pos_rank += binom(n, k--);
         }
-        else
-        {
-            // Add on the current binomial coeffcient to the value
-            pos += binom;
-        }
-
-        // Update the values of n and the binomial coeffcient
-        binom *= (n - k);
-        binom /= n--;
     }
 
-    // Now calculate the lexicographic position of the permutation of the four
+    // Now calculate the lexicographic rank of the permutation of the four
     // edges among themselves
-    int perm = 0; int factorial = 1;
+    int perm_rank = 0; int factorial = 1;
     for (int ii = order.size() - 1; ii >= 0; --ii)
     {
         int high_count = 0;
@@ -361,18 +402,18 @@ int Cube::coord_slice_sorted(std::vector<int> edges)
                 ++high_count;
             }
         }
-        perm += high_count * factorial;
+        perm_rank += high_count * factorial;
         factorial *= (order.size() - ii);
     }
 
     // Return the combination of these two data which makes the coordinate
-    return 24 * pos + perm;
+    return 24 * pos_rank + perm_rank;
 }
 
 /******************************************************************************
 * Function:  Cube::coord_ud_sorted
 *
-* Purpose:   Extracts the value of the sorted UD-slice coordinate fromt the
+* Purpose:   Extracts the value of the sorted UD-slice coordinate from the
 *            current cube position.
 *
 * Params:    None.
@@ -391,7 +432,7 @@ int Cube::coord_ud_sorted()
 /******************************************************************************
 * Function:  Cube::coord_rl_sorted
 *
-* Purpose:   Extracts the value of the sorted RL-slice coordinate fromt the
+* Purpose:   Extracts the value of the sorted RL-slice coordinate from the
 *            current cube position.
 *
 * Params:    None.
@@ -410,7 +451,7 @@ int Cube::coord_rl_sorted()
 /******************************************************************************
 * Function:  Cube::coord_fb_sorted
 *
-* Purpose:   Extracts the value of the sorted FB-slice coordinate fromt the
+* Purpose:   Extracts the value of the sorted FB-slice coordinate from the
 *            current cube position.
 *
 * Params:    None.
