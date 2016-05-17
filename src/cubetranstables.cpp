@@ -1,9 +1,9 @@
 /******************************************************************************
-* File:    cube.cpp
+* File:    cubetranstables.cpp
 *
 * Purpose: Builds transition tables for the two phases of the Kociemba
 *          algorithm for solving the cube.
-*******************************************************************************
+******************************************************************************/
 
 /******************************************************************************
 * This file contains code which initialises the transition tables for the
@@ -55,9 +55,8 @@
 * Includes
 ******************************************************************************/
 #include <algorithm>
-#include <array>
-#include <deque>
 #include <iostream>
+#include <vector>
 
 #include <cube.h>
 #include <cubetranstables.h>
@@ -65,14 +64,23 @@
 /******************************************************************************
 * Initial definitions of the transition tables
 ******************************************************************************/
-std::array<std::array<int, NUM_MOVES>, 2187>  cube_co_trans;
-std::array<std::array<int, NUM_MOVES>, 2048>  cube_eo_trans;
-std::array<std::array<int, NUM_MOVES>, 40320> cube_cp_trans;
-std::array<std::array<int, NUM_MOVES>, 11880> cube_slice_sorted_trans;
+transtable cube_co_trans(2187, std::vector<int>(NUM_MOVES, 0));
+transtable cube_eo_trans(2048, std::vector<int>(NUM_MOVES, 0));
+transtable cube_cp_trans(40320, std::vector<int>(NUM_MOVES, 0));
+transtable cube_slice_sorted_trans(11880, std::vector<int>(NUM_MOVES, 0));
 
-std::array<std::array<int, NUM_MOVES>, 495>   cube_ud_pos_trans;
-std::array<std::array<int, NUM_MOVES>, 24>    cube_ud_perm_trans;
-std::array<std::array<int, NUM_MOVES>, 40320> cube_ep_trans;
+transtable cube_ud_pos_trans(495, std::vector<int>(NUM_MOVES, 0));
+transtable cube_ud_perm_trans(24, std::vector<int>(NUM_MOVES, 0));
+transtable cube_ep_trans(40320, std::vector<int>(NUM_MOVES, 0));
+
+int cube_co_trans_solved = 0;
+int cube_eo_trans_solved = 0;
+int cube_cp_trans_solved = 0;
+int cube_slice_sorted_trans_solved = 0;
+
+int cube_ud_pos_trans_solved = 0;
+int cube_ud_perm_trans_solved = 0;
+int cube_ep_trans_solved = 0;
 
 /******************************************************************************
 * Implementation of functions which populate the transition tables for each
@@ -99,8 +107,8 @@ void cube_populate_co_trans()
     std::vector<int> corner_perm, corner_orient, edge_perm, edge_orient;
     corner_perm   = {0, 1, 2, 3, 4, 5, 6, 7};
     corner_orient = {0, 0, 0, 0, 0, 0, 0, 0};
-    edge_perm     = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    edge_orient   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0};
+    edge_perm     = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    edge_orient   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0};
 
     // Local variables
     int from, to;
@@ -136,6 +144,10 @@ void cube_populate_co_trans()
             cube_co_trans[from][move] = to;
         }
     }
+
+    // Store the coordinate cooresponding to the solved position
+    Cube solved_cube;
+    cube_co_trans_solved = solved_cube.coord_corner_orientation();
 }
 
 /******************************************************************************
@@ -158,8 +170,8 @@ void cube_populate_eo_trans()
     std::vector<int> corner_perm, corner_orient, edge_perm, edge_orient;
     corner_perm   = {0, 1, 2, 3, 4, 5, 6, 7};
     corner_orient = {0, 0, 0, 0, 0, 0, 0, 0};
-    edge_perm     = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    edge_orient   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0};
+    edge_perm     = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    edge_orient   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0};
 
     // Local variables
     int from, to;
@@ -195,6 +207,10 @@ void cube_populate_eo_trans()
             cube_eo_trans[from][move] = to;
         }
     }
+
+    // Store the coordinate cooresponding to the solved position
+    Cube solved_cube;
+    cube_eo_trans_solved = solved_cube.coord_edge_orientation();
 }
 
 /******************************************************************************
@@ -217,8 +233,8 @@ void cube_populate_cp_trans()
     std::vector<int> corner_perm, corner_orient, edge_perm, edge_orient;
     corner_perm   = {0, 1, 2, 3, 4, 5, 6, 7};
     corner_orient = {0, 0, 0, 0, 0, 0, 0, 0};
-    edge_perm     = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    edge_orient   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0};
+    edge_perm     = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    edge_orient   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0};
 
     // Local variables
     int from, to;
@@ -238,6 +254,10 @@ void cube_populate_cp_trans()
             cube_cp_trans[from][move] = to;
         }
     } while (std::next_permutation(corner_perm.begin(), corner_perm.end()));
+
+    // Store the coordinate cooresponding to the solved position
+    Cube solved_cube;
+    cube_cp_trans_solved = solved_cube.coord_corner_permutation();
 }
 
 /******************************************************************************
@@ -265,8 +285,8 @@ void cube_populate_slice_sorted_trans()
     std::vector<int> corner_perm, corner_orient, edge_perm, edge_orient;
     corner_perm   = {0, 1, 2, 3, 4, 5, 6, 7};
     corner_orient = {0, 0, 0, 0, 0, 0, 0, 0};
-    edge_perm     = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    edge_orient   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0};
+    edge_perm     = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    edge_orient   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0};
 
     // Local variables
     int from, to;
@@ -289,6 +309,10 @@ void cube_populate_slice_sorted_trans()
             cube_slice_sorted_trans[from][move] = to;
         }
     } while (std::next_permutation(edge_perm.begin(), edge_perm.end()));
+
+    // Store the coordinate cooresponding to the solved position
+    Cube solved_cube;
+    cube_slice_sorted_trans_solved = solved_cube.coord_ud_sorted();
 }
 
 /******************************************************************************
@@ -321,6 +345,11 @@ void cube_populate_ud_pos_trans()
             cube_ud_pos_trans[from][move] = to;
         }
     }
+
+    // Store the coordinate cooresponding to the solved position
+    Cube solved_cube;
+    int ud_solved = solved_cube.coord_ud_sorted();
+    cube_ud_pos_trans_solved = ud_solved / 24;
 }
 
 /******************************************************************************
@@ -358,6 +387,11 @@ void cube_populate_ud_perm_trans()
             cube_ud_perm_trans[from][move] = to;
         }
     }
+
+    // Store the coordinate cooresponding to the solved position
+    Cube solved_cube;
+    int ud_solved = solved_cube.coord_ud_sorted();
+    cube_ud_perm_trans_solved = ud_solved % 24;
 }
 
 /******************************************************************************
@@ -382,8 +416,8 @@ void cube_populate_ep_trans()
     std::vector<int> corner_perm, corner_orient, edge_perm, edge_orient;
     corner_perm   = {0, 1, 2, 3, 4, 5, 6, 7};
     corner_orient = {0, 0, 0, 0, 0, 0, 0, 0};
-    edge_perm     = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    edge_orient   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0};
+    edge_perm     = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    edge_orient   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0};
 
     // Local variables
     int from, to;
@@ -418,6 +452,12 @@ void cube_populate_ep_trans()
         cube_ep_trans[from][move] = to;
 
     } while (std::next_permutation(ud_edges.begin(), ud_edges.end()));
+
+    // Store the coordinate cooresponding to the solved position
+    Cube solved_cube;
+    int rl_solved = solved_cube.coord_rl_sorted();
+    int fb_solved = solved_cube.coord_fb_sorted();
+    cube_ep_trans_solved = 24 * rl_solved + fb_solved;
 }
 
 /******************************************************************************
@@ -434,26 +474,12 @@ void cube_populate_ep_trans()
 ******************************************************************************/
 void cube_populate_all_trans_tables()
 {
-    std::cout << "Doing CO" << std::endl;
     cube_populate_co_trans();
-    std::cout << "Doing EO" << std::endl;
     cube_populate_eo_trans();
-    std::cout << "Doing CP" << std::endl;
     cube_populate_cp_trans();
-    std::cout << "Doing SLICE" << std::endl;
     cube_populate_slice_sorted_trans();
 
-    std::cout << "Doing UD POS" << std::endl;
     cube_populate_ud_pos_trans();
-    std::cout << "Doing UD PERM" << std::endl;
     cube_populate_ud_perm_trans();
-    std::cout << "Doing EP" << std::endl;
     cube_populate_ep_trans();
-    std::cout << "Done!" << std::endl;
-}
-
-int main()
-{
-    cube_populate_all_trans_tables();
-    return 0;
 }

@@ -10,21 +10,35 @@
 /******************************************************************************
 * Dependencies
 ******************************************************************************/
-#include <array>
+#include <vector>
 
 #include <cube.h>
 
 /******************************************************************************
 * Transition tables
 ******************************************************************************/
-extern std::array<std::array<int, NUM_MOVES>, 2187>  cube_co_trans;
-extern std::array<std::array<int, NUM_MOVES>, 2048>  cube_eo_trans;
-extern std::array<std::array<int, NUM_MOVES>, 40320> cube_cp_trans;
-extern std::array<std::array<int, NUM_MOVES>, 11880> cube_slice_sorted_trans;
+typedef std::vector<std::vector<int>> transtable;
 
-extern std::array<std::array<int, NUM_MOVES>, 495>   cube_ud_pos_trans;
-extern std::array<std::array<int, NUM_MOVES>, 24>    cube_ud_perm_trans;
-extern std::array<std::array<int, NUM_MOVES>, 40320> cube_ep_trans;
+extern transtable cube_co_trans;
+extern transtable cube_eo_trans;
+extern transtable cube_cp_trans;
+extern transtable cube_slice_sorted_trans;
+
+extern transtable cube_ud_pos_trans;
+extern transtable cube_ud_perm_trans;
+extern transtable cube_ep_trans;
+
+/******************************************************************************
+* Coordinates representing the solved position for each transition table
+******************************************************************************/
+extern int cube_co_trans_solved;
+extern int cube_eo_trans_solved;
+extern int cube_cp_trans_solved;
+extern int cube_slice_sorted_trans_solved;
+
+extern int cube_ud_pos_trans_solved;
+extern int cube_ud_perm_trans_solved;
+extern int cube_ep_trans_solved;
 
 /******************************************************************************
 * Functions to populate the transition tables.

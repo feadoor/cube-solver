@@ -4,12 +4,13 @@
 * Purpose: Implements the Rubik's cube at the cubie level, and provides
 *          translation to the coordinates required for the two-phase Kociemba
 *          algorithm to run.
-*******************************************************************************
+******************************************************************************/
 
 /******************************************************************************
 * Includes
 ******************************************************************************/
 #include <algorithm>
+#include <iostream>
 #include <vector>
 
 #include <cube.h>
@@ -100,7 +101,7 @@ Cube::Cube(std::vector<int> corner_perm, std::vector<int> corner_orient,
 /******************************************************************************
 * Function:  Cube::perform_move
 *
-* Purpose:   Performs a move on this CUbe object
+* Purpose:   Performs a move on this Cube object
 *
 * Params:    move - which move is being performed.
 *
@@ -237,7 +238,7 @@ void Cube::perform_move(int move)
         // Permute the edges according to how far we turned the face
         int from = edges_moved[ii];
         int to   = edges_moved[(ii + turn_amt) % edges_moved.size()];
-        new_edge_permutation[to] = from;
+        new_edge_permutation[to] = edge_permutation[from];
 
         // Calculate the total flip for this edge piece and update it
         int flip = 0;
