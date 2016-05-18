@@ -55,7 +55,6 @@
 * Includes
 ******************************************************************************/
 #include <algorithm>
-#include <iostream>
 #include <vector>
 
 #include <cube.h>
@@ -112,7 +111,6 @@ void cube_populate_co_trans()
 
     // Local variables
     int from, to;
-    int move;
 
     // Step through each possible corner orientation. The orientations consist 
     // of a sequence of 8 numbers taking values between 0 and 2 inclusive, 
@@ -134,7 +132,7 @@ void cube_populate_co_trans()
         // For every possible move that can be performed, construct a cube with
         // the given corner orientation and record the result of performing the
         // chosen move.
-        for (move = 0; move < NUM_MOVES; ++move)
+        for (int move = 0; move < NUM_MOVES; ++move)
         {
             Cube cube(corner_perm, corner_orient, edge_perm, edge_orient);
             from = cube.coord_corner_orientation();
@@ -145,7 +143,7 @@ void cube_populate_co_trans()
         }
     }
 
-    // Store the coordinate cooresponding to the solved position
+    // Store the coordinate corresponding to the solved position
     Cube solved_cube;
     cube_co_trans_solved = solved_cube.coord_corner_orientation();
 }
@@ -175,7 +173,6 @@ void cube_populate_eo_trans()
 
     // Local variables
     int from, to;
-    int move;
 
     // Step through each possible edge orientation. The orientations consist 
     // of a sequence of 12 numbers taking values between 0 and 1 inclusive, 
@@ -197,7 +194,7 @@ void cube_populate_eo_trans()
         // For every possible move that can be performed, construct a cube with
         // the given edge orientation and record the result of performing the
         // chosen move.
-        for (move = 0; move < NUM_MOVES; ++move)
+        for (int move = 0; move < NUM_MOVES; ++move)
         {
             Cube cube(corner_perm, corner_orient, edge_perm, edge_orient);
             from = cube.coord_edge_orientation();
@@ -208,7 +205,7 @@ void cube_populate_eo_trans()
         }
     }
 
-    // Store the coordinate cooresponding to the solved position
+    // Store the coordinate corresponding to the solved position
     Cube solved_cube;
     cube_eo_trans_solved = solved_cube.coord_edge_orientation();
 }
@@ -238,13 +235,12 @@ void cube_populate_cp_trans()
 
     // Local variables
     int from, to;
-    int move;
 
     // Step through every possible corner permutation, for each one recording
     // the result of performing each possible move on it.
     do
     {
-        for (move = 0; move < NUM_MOVES; ++move)
+        for (int move = 0; move < NUM_MOVES; ++move)
         {
             Cube cube(corner_perm, corner_orient, edge_perm, edge_orient);
             from = cube.coord_corner_permutation();
@@ -255,7 +251,7 @@ void cube_populate_cp_trans()
         }
     } while (std::next_permutation(corner_perm.begin(), corner_perm.end()));
 
-    // Store the coordinate cooresponding to the solved position
+    // Store the coordinate corresponding to the solved position
     Cube solved_cube;
     cube_cp_trans_solved = solved_cube.coord_corner_permutation();
 }
@@ -290,7 +286,6 @@ void cube_populate_slice_sorted_trans()
 
     // Local variables
     int from, to;
-    int move;
 
     // Step through all the possible positionings of the UD-slice edges.
     edge_perm = {-1, -1, -1, -1, -1, -1, -1, -1, 
@@ -299,7 +294,7 @@ void cube_populate_slice_sorted_trans()
 
     do
     {
-        for (move = 0; move < NUM_MOVES; ++move)
+        for (int move = 0; move < NUM_MOVES; ++move)
         {
             Cube cube(corner_perm, corner_orient, edge_perm, edge_orient);
             from = cube.coord_ud_sorted();
@@ -310,7 +305,7 @@ void cube_populate_slice_sorted_trans()
         }
     } while (std::next_permutation(edge_perm.begin(), edge_perm.end()));
 
-    // Store the coordinate cooresponding to the solved position
+    // Store the coordinate corresponding to the solved position
     Cube solved_cube;
     cube_slice_sorted_trans_solved = solved_cube.coord_ud_sorted();
 }
@@ -324,32 +319,44 @@ void cube_populate_slice_sorted_trans()
 *
 * Returns:   Nothing
 *
-* Operation: Uses the already-existing transition table for the sorted UD-slice
-*            coordinate to determine the effect of each possible move on the
-*            unsorted UD-slice coordinate.
+* Operation: For each possible set of positions of the four UD-slice edges,
+*            construct a cube with the edges in those positions, and for each
+*            possible move, record the effect of that move.
 ******************************************************************************/
 void cube_populate_ud_pos_trans()
 {
+    // Some vectors to hold permutation and orientation info from which we can
+    // instantiate a Cube object.
+    std::vector<int> corner_perm, corner_orient, edge_perm, edge_orient;
+    corner_perm   = {0, 1, 2, 3, 4, 5, 6, 7};
+    corner_orient = {0, 0, 0, 0, 0, 0, 0, 0};
+    edge_perm     = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    edge_orient   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0};
+
     // Local variables
     int from, to;
-    int move;
 
-    // Step through the possible values of the unsorted UD-slice coordinate.
-    // For each one, use a corresponding entry in the sorted slice transition
-    // table to determine the effect of each possible move.
-    for (move = 0; move < NUM_MOVES; ++move)
+    // Step through all the possible positionings of the UD-slice edges.
+    edge_perm = {-1, -1, -1, -1, -1, -1, -1, -1,
+                 EDGE_FR, EDGE_FR, EDGE_FR, EDGE_FR};
+    std::sort(edge_perm.begin(), edge_perm.end());
+
+    do
     {
-        for (from = 0; from < cube_ud_pos_trans.size(); ++from)
+        for (int move = 0; move < NUM_MOVES; ++move)
         {
-            to = cube_slice_sorted_trans[24 * from][move] / 24;
+            Cube cube(corner_perm, corner_orient, edge_perm, edge_orient);
+            from = cube.coord_ud_pos();
+            cube.perform_move(move);
+            to = cube.coord_ud_pos();
+
             cube_ud_pos_trans[from][move] = to;
         }
-    }
+    } while (std::next_permutation(edge_perm.begin(), edge_perm.end()));
 
-    // Store the coordinate cooresponding to the solved position
+    // Store the coordinate corresponding to the solved position
     Cube solved_cube;
-    int ud_solved = solved_cube.coord_ud_sorted();
-    cube_ud_pos_trans_solved = ud_solved / 24;
+    cube_ud_pos_trans_solved = solved_cube.coord_ud_pos();
 }
 
 /******************************************************************************
@@ -361,37 +368,51 @@ void cube_populate_ud_pos_trans()
 *
 * Returns:   Nothing
 *
-* Operation: Uses the already-existing transition table for the sorted UD-slice
-*            coordinate to determine the effect of each possible move on the
-*            UD-slice permutation coordinate.
+* Operation: For each possible permutation of the four UD-slice edges,
+*            construct a cube with the edges in those positions, and for each
+*            possible move, record the effect of that move.
 ******************************************************************************/
 void cube_populate_ud_perm_trans()
 {
+    // Some vectors to hold permutation and orientation info from which we can
+    // instantiate a Cube object.
+    std::vector<int> corner_perm, corner_orient, edge_perm, edge_orient;
+    corner_perm   = {0, 1, 2, 3, 4, 5, 6, 7};
+    corner_orient = {0, 0, 0, 0, 0, 0, 0, 0};
+    edge_perm     = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    edge_orient   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0};
+
     // Local variables
     int from, to;
-    int move;
 
-    // Work out the base value of the sorted UD-slice coordinate so that we
-    // know which entry in the sorted transition table is relevant.
-    Cube cube;
-    int base = (cube.coord_ud_sorted() / 24) * 24;
+    // Step through the possible permutations of the 4 edges.
+    std::vector<int> ud_edges = {EDGE_FR, EDGE_FL, EDGE_BL, EDGE_BR};
+    std::sort(ud_edges.begin(), ud_edges.end());
+    std::vector<int> sorted_ud_slice_edges = ud_edges;
 
-    // Step through the possible values of the UD-slice permutation coordinate.
-    // For each one, use a corresponding entry in the sorted slice transition
-    // table to determine the effect of each possible move.
-    for (move = 0; move < NUM_MOVES; ++move)
+    do
     {
-        for (from = 0; from < cube_ud_perm_trans.size(); ++from)
+        for (int move = 0; move < NUM_MOVES; ++move)
         {
-            to = cube_slice_sorted_trans[base + from][move] % 24;
+            // Construct a cube with the given edge permutation
+            for (int ii = 0; ii < ud_edges.size(); ++ii)
+            {
+                edge_perm[sorted_ud_slice_edges[ii]] = ud_edges[ii];
+            }   
+            Cube cube(corner_perm, corner_orient, edge_perm, edge_orient);
+
+            // Record the result of the move
+            from = cube.coord_ud_perm();
+            cube.perform_move(move);
+            to = cube.coord_ud_perm();
+
             cube_ud_perm_trans[from][move] = to;
         }
-    }
+    } while (std::next_permutation(ud_edges.begin(), ud_edges.end()));
 
-    // Store the coordinate cooresponding to the solved position
+    // Store the coordinate corresponding to the solved position
     Cube solved_cube;
-    int ud_solved = solved_cube.coord_ud_sorted();
-    cube_ud_perm_trans_solved = ud_solved % 24;
+    cube_ud_perm_trans_solved = solved_cube.coord_ud_perm();
 }
 
 /******************************************************************************
@@ -421,7 +442,6 @@ void cube_populate_ep_trans()
 
     // Local variables
     int from, to;
-    int move;
 
     // Step through the possible permutations of the 8 edges within the U and
     // D layers.
@@ -432,32 +452,28 @@ void cube_populate_ep_trans()
 
     do
     {
-        // Construct a cube with the given edge permutation
-        for (int ii = 0; ii < ud_edges.size(); ++ii)
+        for (int move = 0; move < NUM_MOVES; ++move)
         {
-            edge_perm[sorted_ud_edges[ii]] = ud_edges[ii];
-        }   
-        Cube cube(corner_perm, corner_orient, edge_perm, edge_orient);
+            // Construct a cube with the given edge permutation
+            for (int ii = 0; ii < ud_edges.size(); ++ii)
+            {
+                edge_perm[sorted_ud_edges[ii]] = ud_edges[ii];
+            }   
+            Cube cube(corner_perm, corner_orient, edge_perm, edge_orient);
 
-        // Extract the sorted RL-slice and FB-slice coordinates and compute the
-        // result of each move
-        int from_rl = cube.coord_rl_sorted();
-        int from_fb = cube.coord_fb_sorted();
-        from = 24 * from_rl + from_fb;
+            // Store the result of the move
+            from = cube.coord_edge_permutation();
+            cube.perform_move(move);
+            to = cube.coord_edge_permutation();
 
-        int to_rl = cube_slice_sorted_trans[from_rl][move];
-        int to_fb = cube_slice_sorted_trans[from_fb][move];
-        int to = 24 * to_rl + to_fb;
-
-        cube_ep_trans[from][move] = to;
+            cube_ep_trans[from][move] = to;
+        }
 
     } while (std::next_permutation(ud_edges.begin(), ud_edges.end()));
 
-    // Store the coordinate cooresponding to the solved position
+    // Store the coordinate corresponding to the solved position
     Cube solved_cube;
-    int rl_solved = solved_cube.coord_rl_sorted();
-    int fb_solved = solved_cube.coord_fb_sorted();
-    cube_ep_trans_solved = 24 * rl_solved + fb_solved;
+    cube_ep_trans_solved = solved_cube.coord_edge_permutation();
 }
 
 /******************************************************************************

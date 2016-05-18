@@ -10,7 +10,6 @@
 * Includes
 ******************************************************************************/
 #include <algorithm>
-#include <iostream>
 #include <vector>
 
 #include <cube.h>
@@ -387,6 +386,7 @@ int Cube::coord_slice_sorted(std::vector<int> edges)
             // We've found one of the slice edges, so update the rank and note
             // the order in which we found this edge.
             pos_rank += binom(n, k--);
+            order.push_back(curr_edge);
         }
     }
 
@@ -466,4 +466,53 @@ int Cube::coord_fb_sorted()
 {
     std::vector<int> edges = {EDGE_UR, EDGE_UL, EDGE_DL, EDGE_DR};
     return coord_slice_sorted(edges);
+}
+
+/******************************************************************************
+* Function:  Cube::coord_ud_pos
+*
+* Purpose:   Extract the unsorted UD-slice coordinate form the cube position.
+*
+* Params:    None.
+*
+* Returns:   The value of the unsorted UD-slice coordinate.
+*
+* Operation: Returns (sorted UD-slice coordinate) / 24.
+******************************************************************************/
+int Cube::coord_ud_pos()
+{
+    return coord_ud_sorted() / 24;
+}
+
+/******************************************************************************
+* Function:  Cube::coord_ud_perm
+*
+* Purpose:   Extract the UD-slice permutation coordinate form the cube state.
+*
+* Params:    None.
+*
+* Returns:   The value of the unsorted UD-slice coordinate.
+*
+* Operation: Returns (sorted UD-slice coordinate) % 24.
+******************************************************************************/
+int Cube::coord_ud_perm()
+{
+    return coord_ud_sorted() % 24;
+}
+
+/******************************************************************************
+* Function:  Cube::coord_edge_permutation
+*
+* Purpose:   Extract the edge permutation coordinate form the cube position.
+*
+* Params:    None.
+*
+* Returns:   The value of the edge permutation coordinate.
+*
+* Operation: Returns 24x + y%24, where x is the sorted RL-slice coordinate and 
+*            y is the sorted FB-slice coordinate.
+******************************************************************************/
+int Cube::coord_edge_permutation()
+{
+    return 24 * coord_rl_sorted() + coord_fb_sorted() % 24;
 }

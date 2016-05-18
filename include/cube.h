@@ -53,6 +53,9 @@ public:
     int coord_ud_sorted();
     int coord_rl_sorted();
     int coord_fb_sorted();
+    int coord_ud_pos();
+    int coord_ud_perm();
+    int coord_edge_permutation();
 };
 
 #endif

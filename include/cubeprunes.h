@@ -18,12 +18,8 @@
 /******************************************************************************
 * Constants
 ******************************************************************************/
-std::vector<int> p1_moves = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_L, MOVE_L2, 
-                             MOVE_LP, MOVE_F, MOVE_F2, MOVE_FP, MOVE_R, 
-                             MOVE_R2, MOVE_RP, MOVE_B, MOVE_B2, MOVE_BP, 
-                             MOVE_D, MOVE_D2, MOVE_DP};
-std::vector<int> p2_moves = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_L2, MOVE_F2, 
-                             MOVE_R2, MOVE_B2, MOVE_D, MOVE_D2, MOVE_DP};
+extern std::vector<int> p1_moves;
+extern std::vector<int> p2_moves;
 
 /******************************************************************************
 * Pruning tables
@@ -40,10 +36,10 @@ extern prunetable cube_cp_ud_prune;
 /******************************************************************************
 * Functions to populate the pruning tables.
 ******************************************************************************/
-void cube_phase1_prune(transtable trans1, transtable trans2, 
-                       int start1, int start2, prunetable prune);
-void cube_phase2_prune(transtable trans1, transtable trans2, 
-                       int start1, int start2, prunetable prune);
+void cube_phase1_prune(const transtable &trans1, const transtable &trans2, 
+                       int start1, int start2, prunetable &prune);
+void cube_phase2_prune(const transtable &trans1, const transtable &trans2, 
+                       int start1, int start2, prunetable &prune);
 void cube_all_prune();
 
 #endif
