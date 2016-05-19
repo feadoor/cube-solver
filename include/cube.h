@@ -46,16 +46,13 @@ public:
     Cube();
     Cube(std::vector<int> corner_perm, std::vector<int> corner_orient,
          std::vector<int> edge_perm,   std::vector<int> edge_orient);
-    void perform_move(int move);
+    Cube perform_move(int move);
     int coord_corner_orientation();
     int coord_edge_orientation();
     int coord_corner_permutation();
     int coord_ud_sorted();
     int coord_rl_sorted();
     int coord_fb_sorted();
-    int coord_ud_pos();
-    int coord_ud_perm();
-    int coord_edge_permutation();
 };
 
 #endif
