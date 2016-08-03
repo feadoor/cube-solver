@@ -137,11 +137,11 @@ void cube_create_p1_allowed_moves()
 *
 * Returns:   Nothing.
 *
-* Operation: In phase 2, one half turns of R, L, F, B are allowed, but not 
-*            every move is allowed to follow every other move. In particular, 
+* Operation: In phase 2, one half turns of R, L, F, B are allowed, but not
+*            every move is allowed to follow every other move. In particular,
 *            no face can be turned twice in a row, and, since RL = LR, FB = BF,
 *            UD = DU, we do not allow a turn of the R face to follow a turn of
-*            the L face, or a turn of the F face to follow a turn of the B 
+*            the L face, or a turn of the F face to follow a turn of the B
 *            face, or a turn of the U face to follow a turn of the D face.
 ******************************************************************************/
 void cube_create_p2_allowed_moves()
@@ -165,35 +165,35 @@ void cube_create_p2_allowed_moves()
                                         MOVE_B2, MOVE_D,  MOVE_D2, MOVE_DP};
 
     cube_p2_allowed_moves[MOVE_F]    = {MOVE_U,  MOVE_U2, MOVE_UP, MOVE_L2,
-                                        MOVE_R2, MOVE_B2, MOVE_D,  MOVE_D2, 
+                                        MOVE_R2, MOVE_B2, MOVE_D,  MOVE_D2,
                                         MOVE_DP};
 
     cube_p2_allowed_moves[MOVE_F2]   = {MOVE_U,  MOVE_U2, MOVE_UP, MOVE_L2,
-                                        MOVE_R2, MOVE_B2, MOVE_D,  MOVE_D2, 
+                                        MOVE_R2, MOVE_B2, MOVE_D,  MOVE_D2,
                                         MOVE_DP};
 
     cube_p2_allowed_moves[MOVE_FP]   = {MOVE_U,  MOVE_U2, MOVE_UP, MOVE_L2,
-                                        MOVE_R2, MOVE_B2, MOVE_D,  MOVE_D2, 
+                                        MOVE_R2, MOVE_B2, MOVE_D,  MOVE_D2,
                                         MOVE_DP};
 
     cube_p2_allowed_moves[MOVE_R]    = {MOVE_U,  MOVE_U2, MOVE_UP, MOVE_L2,
-                                        MOVE_F2, MOVE_B2, MOVE_D,  MOVE_D2, 
+                                        MOVE_F2, MOVE_B2, MOVE_D,  MOVE_D2,
                                         MOVE_DP};
 
     cube_p2_allowed_moves[MOVE_R2]   = {MOVE_U,  MOVE_U2, MOVE_UP, MOVE_L2,
-                                        MOVE_F2, MOVE_B2, MOVE_D,  MOVE_D2, 
+                                        MOVE_F2, MOVE_B2, MOVE_D,  MOVE_D2,
                                         MOVE_DP};
 
     cube_p2_allowed_moves[MOVE_RP]   = {MOVE_U,  MOVE_U2, MOVE_UP, MOVE_L2,
-                                        MOVE_F2, MOVE_B2, MOVE_D,  MOVE_D2, 
+                                        MOVE_F2, MOVE_B2, MOVE_D,  MOVE_D2,
                                         MOVE_DP};
 
     cube_p2_allowed_moves[MOVE_B]    = {MOVE_U,  MOVE_U2, MOVE_UP, MOVE_L2,
                                         MOVE_R2, MOVE_D,  MOVE_D2, MOVE_DP};
- 
+
     cube_p2_allowed_moves[MOVE_B2]   = {MOVE_U,  MOVE_U2, MOVE_UP, MOVE_L2,
                                         MOVE_R2, MOVE_D,  MOVE_D2, MOVE_DP};
- 
+
     cube_p2_allowed_moves[MOVE_BP]   = {MOVE_U,  MOVE_U2, MOVE_UP, MOVE_L2,
                                         MOVE_R2, MOVE_D,  MOVE_D2, MOVE_DP};
 

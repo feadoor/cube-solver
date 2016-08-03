@@ -1,7 +1,7 @@
 /******************************************************************************
 * File:    cubetables.cpp
 *
-* Purpose: Builds transition and pruning tables for the two phases of the 
+* Purpose: Builds transition and pruning tables for the two phases of the
 *          Kociemba algorithm for solving the cube.
 ******************************************************************************/
 

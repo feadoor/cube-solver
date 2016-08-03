@@ -35,7 +35,7 @@
 CubeTrans::CubeTrans(std::function<int(Cube&)> func, int range)
 {
     coord_func = func;
-    table = std::vector<std::vector<int>>(range, 
+    table = std::vector<std::vector<int>>(range,
                                           std::vector<int>(NUM_MOVES, -1));
 }
 
@@ -60,7 +60,7 @@ int CubeTrans::solved_pos()
 *
 * Purpose:   Returns an entry in the transition table.
 *
-* Params:    position - The coordinate value of the 'from' position 
+* Params:    position - The coordinate value of the 'from' position
 *            move     - The move to be performed.
 *
 * Returns:   The coordinate value of the resulting position.
