@@ -503,7 +503,7 @@ int Cube::coord_fb_sorted()
 ******************************************************************************/
 
 /******************************************************************************
-* Function:  Cube::edge_permutation
+* Function:  Cube::edge_permutation_calc
 *
 * Purpose:   Calculates the edge permutation coordinate from the values of the
 *            sorted RL-slice coordinate and the sorted FB-slice coordinate.
@@ -520,13 +520,13 @@ int Cube::coord_fb_sorted()
 *            where x is the sorted RL-slice coordinate, and y is the sorted
 *            FB-slice coordinate.
 ******************************************************************************/
-static int Cube::edge_permutation(int rl_sorted, int fb_sorted)
+int Cube::edge_permutation_calc(int rl_sorted, int fb_sorted)
 {
     return 24 * rl_sorted + fb_sorted % 24;
 }
 
 /******************************************************************************
-* Function:  Cube::ud_unsorted
+* Function:  Cube::ud_unsorted_calc
 *
 * Purpose:   Calculates the unsorted UD-slice coordinate from the value of the
 *            sorted UD-slice coordinate.
@@ -541,13 +541,13 @@ static int Cube::edge_permutation(int rl_sorted, int fb_sorted)
 * Operation: Calculates the unsorted UD-slice coordinate as x / 24, where x is
 *            the value of the sorted UD-slice coordinate.
 ******************************************************************************/
-static int Cube::ud_unsorted(int ud_sorted)
+int Cube::ud_unsorted_calc(int ud_sorted)
 {
     return ud_sorted / 24;
 }
 
 /******************************************************************************
-* Function:  Cube::ud_permutation
+* Function:  Cube::ud_permutation_calc
 *
 * Purpose:   Calculates the UD-slice permutation coordinate from the value of
 *            the sorted UD-slice coordinate.
@@ -562,7 +562,7 @@ static int Cube::ud_unsorted(int ud_sorted)
 * Operation: Calculates the UD-slice permutation coordinate as x % 24, where x
 *            is the sorted UD-slice coordinate.
 ******************************************************************************/
-static int Cube::ud_permutation(int ud_sorted)
+int Cube::ud_permutation_calc(int ud_sorted)
 {
     return ud_sorted % 24;
 }
@@ -591,7 +591,7 @@ static int Cube::ud_permutation(int ud_sorted)
 ******************************************************************************/
 int Cube::coord_edge_permutation()
 {
-    return edge_permutation(coord_rl_sorted(), coord_fb_sorted());
+    return edge_permutation_calc(coord_rl_sorted(), coord_fb_sorted());
 }
 
 /******************************************************************************
@@ -612,7 +612,7 @@ int Cube::coord_edge_permutation()
 ******************************************************************************/
 int Cube::coord_ud_unsorted()
 {
-    return ud_unsorted(coord_ud_sorted());
+    return ud_unsorted_calc(coord_ud_sorted());
 }
 
 /******************************************************************************
@@ -633,5 +633,5 @@ int Cube::coord_ud_unsorted()
 ******************************************************************************/
 int Cube::coord_ud_permutation()
 {
-    return ud_permutation(coord_ud_sorted());
+    return ud_permutation_calc(coord_ud_sorted());
 }

@@ -53,9 +53,9 @@ public:
     int coord_ud_sorted();
     int coord_rl_sorted();
     int coord_fb_sorted();
-    static int edge_permutation(int rl_sorted, int fb_sorted);
-    static int ud_unsorted(int ud_sorted);
-    static int ud_permutation(int ud_sorted);
+    static int edge_permutation_calc(int rl_sorted, int fb_sorted);
+    static int ud_unsorted_calc(int ud_sorted);
+    static int ud_permutation_calc(int ud_sorted);
     int coord_edge_permutation();
     int coord_ud_unsorted();
     int coord_ud_permutation();
