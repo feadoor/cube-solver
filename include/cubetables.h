@@ -22,10 +22,23 @@ extern CubeTrans cube_cp_trans;
 extern CubeTrans cube_ud_sorted_trans;
 extern CubeTrans cube_rl_sorted_trans;
 extern CubeTrans cube_fb_sorted_trans;
+extern CubeTrans cube_ep_trans;
+extern CubeTrans cube_ud_unsorted_trans;
+extern CubeTrans cube_ud_perm_trans;
 
 /******************************************************************************
-* Functions to populate the transition tables.
+* Pruning tables
+******************************************************************************/
+extern CubePrune cube_co_eo_prune;
+extern CubePrune cube_co_ud_prune;
+extern CubePrune cube_eo_ud_prune;
+extern CubePrune cube_ep_ud_prune;
+extern CubePrune cube_cp_ud_prune;
+
+/******************************************************************************
+* Functions to populate the tables.
 ******************************************************************************/
 void cube_fill_all_trans_tables();
+void cube_fill_all_pruning_tables();
 
 #endif

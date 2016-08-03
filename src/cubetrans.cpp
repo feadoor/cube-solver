@@ -10,8 +10,10 @@
 ******************************************************************************/
 #include <functional>
 #include <stack>
+#include <vector>
 
 #include <cube.h>
+#include <cubephase.h>
 #include <cubetrans.h>
 
 /******************************************************************************
@@ -23,17 +25,21 @@
 *
 * Purpose:   Constructor for the CubeTrans class.
 *
-* Params:    func  - Pointer to Cube member function which calculates the value
-*                    of some coordinate.
-*            range - The number of values taken by the above coordinate.
+* Params:    phase_desc - Whether this pruning table is relevant in phase 1
+*                         or phase 2 of the two-phase algorithm.
+*            func       - Pointer to Cube member function which calculates the
+*                         value of some coordinate.
+*            range      - The number of values taken by the above coordinate.
 *
 * Returns:   Nothing.
 *
 * Operation: Stores the function pointer as a member variable and allocates
-*            space for the transition table entries.
+*            space for the transition table entries. Also stores the moves
+*            allowed for the given phase.
 ******************************************************************************/
-CubeTrans::CubeTrans(std::function<int(Cube&)> func, int range)
+CubeTrans::CubeTrans(int phase_desc, std::function<int(Cube&)> func, int range)
 {
+    phase = phase_desc;
     coord_func = func;
     table = std::vector<std::vector<int>>(range,
                                           std::vector<int>(NUM_MOVES, -1));
@@ -53,6 +59,22 @@ CubeTrans::CubeTrans(std::function<int(Cube&)> func, int range)
 int CubeTrans::solved_pos()
 {
     return _solved_pos;
+}
+
+/******************************************************************************
+* Function:  CubeTrans::size
+*
+* Purpose:   Calculates the size of the transition table.
+*
+* Params:    None.
+*
+* Returns:   The number of values taken by the coordinate this table describes.
+*
+* Operation: Simply return the value.
+******************************************************************************/
+int CubeTrans::size()
+{
+    return table.size();
 }
 
 /******************************************************************************
@@ -90,7 +112,6 @@ void CubeTrans::fill()
     // Local variables
     Cube curr_cube, next_cube;
     int curr_coord, next_coord;
-    int move;
 
     // Set up a stack which we will use to perform the depth-first search and
     // an auxiliary array which will keep track of which coordinate values we
@@ -105,6 +126,16 @@ void CubeTrans::fill()
     seen[_solved_pos] = true;
     dfs.push(solved_cube);
 
+    // Work out the available moves
+    if (phase == PHASE_1)
+    {
+        allowed_moves = cube_p1_allowed_moves[NUM_MOVES];
+    }
+    else if (phase == PHASE_2)
+    {
+        allowed_moves = cube_p2_allowed_moves[NUM_MOVES];
+    }
+
     // Perform the depth-first search
     while (!dfs.empty())
     {
@@ -114,7 +145,7 @@ void CubeTrans::fill()
         curr_coord = coord_func(curr_cube);
         dfs.pop();
 
-        for (move = 0; move < NUM_MOVES; ++move)
+        for (int move : allowed_moves)
         {
             next_cube = curr_cube.perform_move(move);
             next_coord = coord_func(next_cube);
