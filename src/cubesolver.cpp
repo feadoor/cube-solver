@@ -10,12 +10,13 @@
 ******************************************************************************/
 #include <algorithm>
 #include <climits>
+#include <iostream>
 #include <vector>
 
 #include <cube.h>
-#include <cubetranstables.h>
-#include <cubeprunes.h>
-#include <cubesolver.h>                                                 
+#include <cubephase.h>
+#include <cubetables.h>
+#include <cubesolver.h>
 
 /******************************************************************************
 * CubeSolver class implementation
@@ -38,18 +39,15 @@ CubeSolver::CubeSolver()
     Cube cube;
 
     // Calculate the starting values of the phase 1 coordinates.
-    start_co = cube.coord_corner_orientation();
-    start_eo = cube.coord_edge_orientation();
-    start_ud = cube.coord_ud_pos();
+    curr_co = cube.coord_corner_orientation();
+    curr_eo = cube.coord_edge_orientation();
+    curr_ud_pos = cube.coord_ud_unsorted();
 
     // Calculate the starting values of the auxiliary coordinates.
     start_ud_sorted = cube.coord_ud_sorted();
     start_rl_sorted = cube.coord_rl_sorted();
     start_fb_sorted = cube.coord_fb_sorted();
     start_cp  = cube.coord_corner_permutation();
-
-    // Set up the available moves vectors
-    create_available_moves();
 }
 
 /******************************************************************************
@@ -57,7 +55,7 @@ CubeSolver::CubeSolver()
 *
 * Purpose:   Constructor for the CubeSolver class.
 *
-* Params:    scrambled_cube - a Cube object which is in the state we are 
+* Params:    scrambled_cube - a Cube object which is in the state we are
 *                             trying to find a solution to.
 *
 * Returns:   Nothing.
@@ -68,165 +66,40 @@ CubeSolver::CubeSolver()
 CubeSolver::CubeSolver(Cube scrambled_cube)
 {
     // Calculate the starting values of the phase 1 coordinates.
-    start_co = scrambled_cube.coord_corner_orientation();
-    start_eo = scrambled_cube.coord_edge_orientation();
-    start_ud = scrambled_cube.coord_ud_pos();
+    curr_co = scrambled_cube.coord_corner_orientation();
+    curr_eo = scrambled_cube.coord_edge_orientation();
+    curr_ud_pos = scrambled_cube.coord_ud_unsorted();
 
     // Calculate the starting values of the auxiliary coordinates.
     start_ud_sorted = scrambled_cube.coord_ud_sorted();
     start_rl_sorted = scrambled_cube.coord_rl_sorted();
     start_fb_sorted = scrambled_cube.coord_fb_sorted();
     start_cp  = scrambled_cube.coord_corner_permutation();
-
-    // Set up the available moves vectors
-    create_available_moves();
 }
-
-/******************************************************************************
-* Function:  CubeSolver::create_available_moves
-*
-* Purpose:   Fill in the private member variables detailing which moves are
-*            allowed to follow other moves in solutions.
-*
-* Params:    None.
-*
-* Returns:   Nothing.
-*
-* Operation: Mandate that no face can be turned twice in a row, and that the
-*            L, U and F faces cannot follow the R, D and B faces respectively.
-******************************************************************************/
-void CubeSolver::create_available_moves()
-{
-    available_moves_p1 = std::vector<std::vector<int>>(NUM_MOVES, 
-                                                       std::vector<int>(0));
-    available_moves_p2 = std::vector<std::vector<int>>(NUM_MOVES, 
-                                                       std::vector<int>(0));
-
-    available_moves_p1[MOVE_U] = {MOVE_L, MOVE_L2, MOVE_LP, MOVE_F, MOVE_F2,
-                                  MOVE_FP, MOVE_R, MOVE_R2, MOVE_RP, MOVE_B,
-                                  MOVE_B2, MOVE_BP, MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p1[MOVE_U2] = {MOVE_L, MOVE_L2, MOVE_LP, MOVE_F, MOVE_F2,
-                                   MOVE_FP, MOVE_R, MOVE_R2, MOVE_RP, MOVE_B,
-                                   MOVE_B2, MOVE_BP, MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p1[MOVE_UP] = {MOVE_L, MOVE_L2, MOVE_LP, MOVE_F, MOVE_F2,
-                                   MOVE_FP, MOVE_R, MOVE_R2, MOVE_RP, MOVE_B,
-                                   MOVE_B2, MOVE_BP, MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p1[MOVE_L] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_F, MOVE_F2,
-                                  MOVE_FP, MOVE_R, MOVE_R2, MOVE_RP, MOVE_B,
-                                  MOVE_B2, MOVE_BP, MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p1[MOVE_L2] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_F, MOVE_F2,
-                                   MOVE_FP, MOVE_R, MOVE_R2, MOVE_RP, MOVE_B,
-                                   MOVE_B2, MOVE_BP, MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p1[MOVE_LP] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_F, MOVE_F2,
-                                   MOVE_FP, MOVE_R, MOVE_R2, MOVE_RP, MOVE_B,
-                                   MOVE_B2, MOVE_BP, MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p1[MOVE_F] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_L, MOVE_L2,
-                                  MOVE_LP, MOVE_R, MOVE_R2, MOVE_RP, MOVE_B,
-                                  MOVE_B2, MOVE_BP, MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p1[MOVE_F2] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_L, MOVE_L2,
-                                   MOVE_LP, MOVE_R, MOVE_R2, MOVE_RP, MOVE_B,
-                                   MOVE_B2, MOVE_BP, MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p1[MOVE_FP] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_L, MOVE_L2,
-                                   MOVE_LP, MOVE_R, MOVE_R2, MOVE_RP, MOVE_B,
-                                   MOVE_B2, MOVE_BP, MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p1[MOVE_R] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_F, MOVE_F2,
-                                  MOVE_FP, MOVE_B, MOVE_B2, MOVE_BP, MOVE_D,
-                                  MOVE_D2, MOVE_DP};
-    available_moves_p1[MOVE_R2] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_F, MOVE_F2,
-                                   MOVE_FP, MOVE_B, MOVE_B2, MOVE_BP, MOVE_D,
-                                   MOVE_D2, MOVE_DP};
-    available_moves_p1[MOVE_RP] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_F, MOVE_F2,
-                                   MOVE_FP, MOVE_B, MOVE_B2, MOVE_BP, MOVE_D,
-                                   MOVE_D2, MOVE_DP};
-    available_moves_p1[MOVE_B] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_L, MOVE_L2,
-                                  MOVE_LP, MOVE_R, MOVE_R2, MOVE_RP, MOVE_D,
-                                  MOVE_D2, MOVE_DP};
-    available_moves_p1[MOVE_B2] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_L, MOVE_L2,
-                                   MOVE_LP, MOVE_R, MOVE_R2, MOVE_RP, MOVE_D,
-                                   MOVE_D2, MOVE_DP};
-    available_moves_p1[MOVE_BP] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_L, MOVE_L2,
-                                   MOVE_LP, MOVE_R, MOVE_R2, MOVE_RP, MOVE_D,
-                                   MOVE_D2, MOVE_DP};
-    available_moves_p1[MOVE_D] = {MOVE_L, MOVE_L2, MOVE_LP, MOVE_F, MOVE_F2,
-                                  MOVE_FP, MOVE_B, MOVE_B2, MOVE_BP, MOVE_R,
-                                  MOVE_R2, MOVE_RP};
-    available_moves_p1[MOVE_D2] = {MOVE_L, MOVE_L2, MOVE_LP, MOVE_F, MOVE_F2,
-                                   MOVE_FP, MOVE_B, MOVE_B2, MOVE_BP, MOVE_R,
-                                   MOVE_R2, MOVE_RP};
-    available_moves_p1[MOVE_DP] = {MOVE_L, MOVE_L2, MOVE_LP, MOVE_F, MOVE_F2,
-                                   MOVE_FP, MOVE_B, MOVE_B2, MOVE_BP, MOVE_R,
-                                   MOVE_R2, MOVE_RP};
-    available_moves_p1.push_back({MOVE_U, MOVE_U2, MOVE_UP, MOVE_L, MOVE_L2,
-                                  MOVE_LP, MOVE_F, MOVE_F2, MOVE_FP, MOVE_R,
-                                  MOVE_R2, MOVE_RP, MOVE_B, MOVE_B2, MOVE_BP,
-                                  MOVE_D, MOVE_D2, MOVE_DP});
-
-    available_moves_p2[MOVE_U] = {MOVE_L2, MOVE_F2, MOVE_R2, MOVE_B2, MOVE_D,
-                                  MOVE_D2, MOVE_DP};
-    available_moves_p2[MOVE_U2] = {MOVE_L2, MOVE_F2, MOVE_R2, MOVE_B2, MOVE_D,
-                                   MOVE_D2, MOVE_DP};
-    available_moves_p2[MOVE_UP] = {MOVE_L2, MOVE_F2, MOVE_R2, MOVE_B2, MOVE_D,
-                                   MOVE_D2, MOVE_DP};
-    available_moves_p2[MOVE_L] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_F2, MOVE_R2, 
-                                  MOVE_B2, MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p2[MOVE_L2] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_F2, MOVE_R2, 
-                                   MOVE_B2, MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p2[MOVE_LP] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_F2, MOVE_R2, 
-                                   MOVE_B2, MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p2[MOVE_F] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_L2, MOVE_R2, 
-                                  MOVE_B2, MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p2[MOVE_F2] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_L2, MOVE_R2, 
-                                   MOVE_B2, MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p2[MOVE_FP] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_L2, MOVE_R2, 
-                                   MOVE_B2, MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p2[MOVE_R] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_F2, MOVE_B2, 
-                                  MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p2[MOVE_R2] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_F2, MOVE_B2, 
-                                   MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p2[MOVE_RP] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_F2, MOVE_B2, 
-                                   MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p2[MOVE_B] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_L2, MOVE_R2, 
-                                  MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p2[MOVE_B2] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_L2, MOVE_R2, 
-                                   MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p2[MOVE_BP] = {MOVE_U, MOVE_U2, MOVE_UP, MOVE_L2, MOVE_R2, 
-                                   MOVE_D, MOVE_D2, MOVE_DP};
-    available_moves_p2[MOVE_D] = {MOVE_L2, MOVE_F2, MOVE_R2, MOVE_B2};
-    available_moves_p2[MOVE_D2] = {MOVE_L2, MOVE_F2, MOVE_R2, MOVE_B2};
-    available_moves_p2[MOVE_DP] = {MOVE_L2, MOVE_F2, MOVE_R2, MOVE_B2};
-    available_moves_p2.push_back({MOVE_U, MOVE_U2, MOVE_UP, MOVE_L2, MOVE_F2,
-                                  MOVE_R2, MOVE_B2, MOVE_D, MOVE_D2, MOVE_DP});
-}                                   
 
 /******************************************************************************
 * Function:  CubeSolver::phase1_search
 *
 * Purpose:   Finds solutions to phase 1 of the Kociemba algorithm.
 *
-* Params:    coord_co    - The current corner orientation coordinate.
-*            coord_eo    - The current edge orientation coordinate.
-*            coord_ud    - The current UD-slice coordinate.
-*            depth       - How deep in the tree we should go from the current
-*                          cube position.
-*            process_sol - A callback which will be be called on each final
-*                          solution as it is discovered.
+* Params:    depth - How deep in the tree we should go from the current cube
+*                    position.
 *
 * Returns:   Nothing.
 *
 * Operation: Uses a depth-first search to find phase-1 solutions, and when a
 *            solution is found, starts a phase 2 search from that position.
 ******************************************************************************/
-void CubeSolver::phase1_search(int coord_co, int coord_eo, int coord_ud,
-                               int depth,
-                               void (*process_sol)(std::vector<int> moves))
+void CubeSolver::phase1_search(int depth)
 {
     // If the depth is zero, then check if we have a valid phase 1 solution.
     if (depth == 0 &&
-        coord_co == cube_co_trans_solved &&
-        coord_eo == cube_eo_trans_solved &&
-        coord_ud == cube_ud_pos_trans_solved &&
-        std::find(p2_moves.begin(), p2_moves.end(), last_move) == 
-                                                                p2_moves.end())
+        curr_co == cube_co_trans.solved_pos() &&
+        curr_eo == cube_eo_trans.solved_pos() &&
+        curr_ud_pos == cube_ud_unsorted_trans.solved_pos() &&
+        std::find(cube_p2_allowed_moves[NUM_MOVES].begin(),
+                  cube_p2_allowed_moves[NUM_MOVES].end(), last_move)
+                                     == cube_p2_allowed_moves[NUM_MOVES].end())
     {
         // Initialise the phase 2 starting coordinates and call into the phase
         // 2 search from this position
@@ -235,21 +108,23 @@ void CubeSolver::phase1_search(int coord_co, int coord_eo, int coord_ud,
         int fb_sorted = start_fb_sorted;
         int coord_cp  = start_cp;
 
-        for (int move: solution)
+        for (int move : solution)
         {
-            ud_sorted = cube_slice_sorted_trans[ud_sorted][move];
-            rl_sorted = cube_slice_sorted_trans[rl_sorted][move];
-            fb_sorted = cube_slice_sorted_trans[fb_sorted][move];
-            coord_cp  = cube_cp_trans[coord_cp][move];
+            ud_sorted = cube_ud_sorted_trans(ud_sorted, move);
+            rl_sorted = cube_rl_sorted_trans(rl_sorted, move);
+            fb_sorted = cube_fb_sorted_trans(fb_sorted, move);
+            coord_cp  = cube_cp_trans(coord_cp, move);
         }
 
-        int new_cp = coord_cp;
-        int new_ep = 24 * rl_sorted + fb_sorted % 24;
-        int new_ud = ud_sorted % 24;
+        curr_cp = coord_cp;
+        curr_ep = Cube::edge_permutation_calc(rl_sorted, fb_sorted);
+        curr_ud_perm = Cube::ud_permutation_calc(ud_sorted);
 
-        for (int depth2 = 0; depth2 <= max_length - solution.size(); ++depth2)
-        {   
-            phase2_search(new_cp, new_ep, new_ud, depth2, process_sol);
+        for (int depth2 = 0;
+             (int)(depth2 + solution.size()) <= max_length;
+             ++depth2)
+        {
+            phase2_search(depth2);
         }
     }
 
@@ -257,24 +132,32 @@ void CubeSolver::phase1_search(int coord_co, int coord_eo, int coord_ud,
     // should prune this branch or not, and then check all available moves.
     else if (depth > 0)
     {
-        if (cube_co_eo_prune[coord_co][coord_eo] <= depth &&
-            cube_co_ud_prune[coord_co][coord_ud] <= depth &&
-            cube_eo_ud_prune[coord_eo][coord_ud] <= depth)
+        if (cube_co_eo_prune(curr_co, curr_eo) <= depth &&
+            cube_co_ud_prune(curr_co, curr_ud_pos) <= depth &&
+            cube_eo_ud_prune(curr_eo, curr_ud_pos) <= depth)
         {
-            for (int move: available_moves_p1[last_move])
+            int old_co = curr_co;
+            int old_eo = curr_eo;
+            int old_ud_pos = curr_ud_pos;
+
+            for (int move : cube_p1_allowed_moves[last_move])
             {
-                int new_co = cube_co_trans[coord_co][move];
-                int new_eo = cube_eo_trans[coord_eo][move];
-                int new_ud = cube_ud_pos_trans[coord_ud][move];
+                curr_co = cube_co_trans(old_co, move);
+                curr_eo = cube_eo_trans(old_eo, move);
+                curr_ud_pos = cube_ud_unsorted_trans(old_ud_pos, move);
 
                 last_move = move;
                 solution.push_back(move);
 
-                phase1_search(new_co, new_eo, new_ud, depth - 1, process_sol);
+                phase1_search(depth - 1);
 
                 solution.pop_back();
                 last_move = (solution.empty()) ? NUM_MOVES : solution.back();
             }
+
+            curr_co = old_co;
+            curr_eo = old_eo;
+            curr_ud_pos = old_ud_pos;
         }
     }
 }
@@ -284,65 +167,148 @@ void CubeSolver::phase1_search(int coord_co, int coord_eo, int coord_ud,
 *
 * Purpose:   Finds solutions to phase 2 of the Kociemba algorithm.
 *
-* Params:    coord_cp    - The current corner permutation coordinate.
-*            coord_ep    - The current edge permutation coordinate.
-*            coord_ud    - The current UD-slice permutation coordinate.
-*            depth       - How deep in the tree we should go from the current
-*                          cube position.
-*            process_sol - A callback which will be be called on each final
-*                          solution as it is discovered.
+* Params:    depth - How deep in the tree we should go from the current cube
+*                    cube position.
 *
 * Returns:   Nothing.
 *
 * Operation: Uses a depth-first search to find phase-2 solutions, and when a
-*            solution is found, executes the callback.
+*            solution is found, calls print_sol on it.
 ******************************************************************************/
-void CubeSolver::phase2_search(int coord_cp, int coord_ep, int coord_ud,
-                               int depth,
-                               void (*process_sol)(std::vector<int> moves))
+void CubeSolver::phase2_search(int depth)
 {
     // Break out early if we're looking for a solution of the same length as
     // one we've already found, or longer.
-    if (depth + solution.size() >= max_length)
+    if ((int)(depth + solution.size()) >= max_length)
     {
         return;
     }
 
     // If the depth is zero, then check if we have a valid phase 2 solution.
     if (depth == 0 &&
-        coord_cp == cube_cp_trans_solved &&
-        coord_ep == cube_ep_trans_solved &&
-        coord_ud == cube_ud_perm_trans_solved)
+        curr_cp == cube_cp_trans.solved_pos() &&
+        curr_ep == cube_ep_trans.solved_pos() &&
+        curr_ud_perm == cube_ud_perm_trans.solved_pos())
     {
         // We've found a solution, so update the max_length, and execute the
         // callback on the solution
         max_length = solution.size() - 1;
-        process_sol(solution);
+        print_sol();
     }
 
     // If the depth is not zero, then check the pruning tables to see if we
     // should prune this branch or not, and then check all available moves.
     else if (depth > 0)
     {
-        if (cube_cp_ud_prune[coord_cp][coord_ud] <= depth &&
-            cube_ep_ud_prune[coord_ep][coord_ud] <= depth)
+        if (cube_cp_ud_prune(curr_cp, curr_ud_perm) <= depth &&
+            cube_ep_ud_prune(curr_ep, curr_ud_perm) <= depth)
         {
-            for (int move: available_moves_p2[last_move])
+            int old_cp = curr_cp;
+            int old_ep = curr_ep;
+            int old_ud_perm = curr_ud_perm;
+
+            for (int move : cube_p2_allowed_moves[last_move])
             {
-                int new_cp = cube_cp_trans[coord_cp][move];
-                int new_ep = cube_ep_trans[coord_ep][move];
-                int new_ud = cube_ud_perm_trans[coord_ud][move];
+                curr_cp = cube_cp_trans(old_cp, move);
+                curr_ep = cube_ep_trans(old_ep, move);
+                curr_ud_perm = cube_ud_perm_trans(old_ud_perm, move);
 
                 last_move = move;
                 solution.push_back(move);
 
-                phase2_search(new_cp, new_ep, new_ud, depth - 1, process_sol);
+                phase2_search(depth - 1);
 
                 solution.pop_back();
                 last_move = (solution.empty()) ? NUM_MOVES : solution.back();
             }
+
+            curr_cp = old_cp;
+            curr_ep = old_ep;
+            curr_ud_perm = old_ud_perm;
         }
     }
+}
+
+/******************************************************************************
+* Function:  CubeSolver::print_sol
+*
+* Purpose:   Display a solution that has been found.
+*
+* Params:    None.
+*
+* Returns:   Nothing.
+*
+* Operation: Prints out the length and the moves of the currently stored
+*            solution.
+******************************************************************************/
+void CubeSolver::print_sol()
+{
+    std::cout << "Length: " << solution.size() << std::endl;
+    for (int ii = 0; ii < solution.size(); ++ii)
+    {
+        switch (solution[ii])
+        {
+            case MOVE_U:
+            case MOVE_U2:
+            case MOVE_UP:
+                std::cout << "U";
+                break;
+            case MOVE_L:
+            case MOVE_L2:
+            case MOVE_LP:
+                std::cout << "L";
+                break;
+            case MOVE_F:
+            case MOVE_F2:
+            case MOVE_FP:
+                std::cout << "F";
+                break;
+            case MOVE_R:
+            case MOVE_R2:
+            case MOVE_RP:
+                std::cout << "R";
+                break;
+            case MOVE_B:
+            case MOVE_B2:
+            case MOVE_BP:
+                std::cout << "B";
+                break;
+            case MOVE_D:
+            case MOVE_D2:
+            case MOVE_DP:
+                std::cout << "D";
+                break;
+        }
+
+        switch (solution[ii])
+        {
+            case MOVE_U:
+            case MOVE_L:
+            case MOVE_F:
+            case MOVE_R:
+            case MOVE_B:
+            case MOVE_D:
+                std::cout << " ";
+                break;
+            case MOVE_U2:
+            case MOVE_L2:
+            case MOVE_F2:
+            case MOVE_R2:
+            case MOVE_B2:
+            case MOVE_D2:
+                std::cout << "2 ";
+                break;
+            case MOVE_UP:
+            case MOVE_LP:
+            case MOVE_FP:
+            case MOVE_RP:
+            case MOVE_BP:
+            case MOVE_DP:
+                std::cout << "' ";
+                break;
+        }
+    }
+    std::cout << std::endl << std::endl;
 }
 
 /******************************************************************************
@@ -358,7 +324,7 @@ void CubeSolver::phase2_search(int coord_cp, int coord_ep, int coord_ud,
 * Operation: Uses the two-phase Kociemba algorithm with transition tables and
 *            pruning to find solutions.
 ******************************************************************************/
-void CubeSolver::solve(void (*process_sol)(std::vector<int> moves))
+void CubeSolver::solve()
 {
     // Reset private member variables to their starting values
     max_length = INT_MAX;
@@ -368,6 +334,6 @@ void CubeSolver::solve(void (*process_sol)(std::vector<int> moves))
     // Begin searching for solutions.
     for (int depth = 0; depth <= max_length; ++depth)
     {
-        phase1_search(start_co, start_eo, start_ud, depth, process_sol);
+        phase1_search(depth);
     }
 }

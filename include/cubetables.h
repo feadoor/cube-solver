@@ -1,45 +1,45 @@
-#ifndef CUBEPRUNES_INCLUDED
-#define CUBEPRUNES_INCLUDED
+#ifndef CUBETABLES_INCLUDED
+#define CUBETABLES_INCLUDED
 
 /******************************************************************************
-* Header:  cubeprunes.h
+* Header:  cubetables.h
 *
-* Purpose: Declarations of the pruning tables for the cube.
+* Purpose: Declarations of the transition and pruning tables for the cube.
 ******************************************************************************/
 
 /******************************************************************************
 * Dependencies
 ******************************************************************************/
-#include <vector>
-
 #include <cube.h>
-#include <cubetranstables.h>
+#include <cubetrans.h>
+#include <cubeprune.h>
 
 /******************************************************************************
-* Constants
+* Transition tables
 ******************************************************************************/
-extern std::vector<int> p1_moves;
-extern std::vector<int> p2_moves;
+extern CubeTrans cube_co_trans;
+extern CubeTrans cube_eo_trans;
+extern CubeTrans cube_cp_trans;
+extern CubeTrans cube_ud_sorted_trans;
+extern CubeTrans cube_rl_sorted_trans;
+extern CubeTrans cube_fb_sorted_trans;
+extern CubeTrans cube_ep_trans;
+extern CubeTrans cube_ud_unsorted_trans;
+extern CubeTrans cube_ud_perm_trans;
 
 /******************************************************************************
 * Pruning tables
 ******************************************************************************/
-typedef std::vector<std::vector<int>> prunetable;
-
-extern prunetable cube_co_eo_prune;
-extern prunetable cube_co_ud_prune;
-extern prunetable cube_eo_ud_prune;
-
-extern prunetable cube_ep_ud_prune;
-extern prunetable cube_cp_ud_prune;
+extern CubePrune cube_co_eo_prune;
+extern CubePrune cube_co_ud_prune;
+extern CubePrune cube_eo_ud_prune;
+extern CubePrune cube_ep_ud_prune;
+extern CubePrune cube_cp_ud_prune;
 
 /******************************************************************************
-* Functions to populate the pruning tables.
+* Functions to populate the tables.
 ******************************************************************************/
-void cube_phase1_prune(const transtable &trans1, const transtable &trans2, 
-                       int start1, int start2, prunetable &prune);
-void cube_phase2_prune(const transtable &trans1, const transtable &trans2, 
-                       int start1, int start2, prunetable &prune);
-void cube_all_prune();
+void cube_fill_all_trans_tables();
+void cube_fill_all_pruning_tables();
 
 #endif

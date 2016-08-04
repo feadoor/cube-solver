@@ -1,40 +1,37 @@
-#ifndef CUBESOLVER_INCLUDED
-#define CUBESOLVER_INCLUDED
+#ifndef CUBETRANS_INCLUDED
+#define CUBETRANS_INCLUDED
 
 /******************************************************************************
-* Header:  cubesolver.h
+* Header:  cubetrans.h
 *
-* Purpose: Declarations for the CubeSolver class
+* Purpose: Declarations for the CubeTrans class.
 ******************************************************************************/
 
 /******************************************************************************
 * Dependencies
 ******************************************************************************/
+#include <functional>
 #include <vector>
 
 #include <cube.h>
 
 /******************************************************************************
-* CubeSolver class declaration
+* CubeTrans class declaration.
 ******************************************************************************/
-class CubeSolver
+class CubeTrans
 {
 private:
-    int max_length;
-    std::vector<int> solution;
-    int last_move;
-
-    int curr_co, curr_eo, curr_ud_pos;
-    int curr_cp, curr_ep, curr_ud_perm;
-    int start_ud_sorted, start_rl_sorted, start_fb_sorted, start_cp;
-
-    void phase1_search(int depth);
-    void phase2_search(int depth);
-    void print_sol();
+    int phase;
+    std::function<int(Cube&)> coord_func;
+    std::vector<std::vector<int>> table;
+    int _solved_pos;
+    std::vector<int> allowed_moves;
 public:
-    CubeSolver();
-    CubeSolver(Cube cube);
-    void solve();
+    CubeTrans(int phase_desc, std::function<int(Cube&)> func, int range);
+    int solved_pos();
+    int size();
+    int operator()(int position, int move);
+    void fill();
 };
 
 #endif

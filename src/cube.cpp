@@ -4,6 +4,10 @@
 * Purpose: Implements the Rubik's cube at the cubie level, and provides
 *          translation to the coordinates required for the two-phase Kociemba
 *          algorithm to run.
+*
+*          There are two types of coordinate - normal coordinates, which are
+*          calculated directly from the cube state, and meta coordinates, which
+*          are calculated from a combination of one or more normal coordinates.
 ******************************************************************************/
 
 /******************************************************************************
@@ -27,7 +31,7 @@
 *
 * Returns:   The value of the binomial coefficient (n choose k).
 *
-* Operation: Uses the direct formula n * (n - 1) * ... * (n - k + 1) / k! 
+* Operation: Uses the direct formula n * (n - 1) * ... * (n - k + 1) / k!
 *            to compute the result.
 ******************************************************************************/
 int binom(int n, int k)
@@ -52,6 +56,10 @@ int binom(int n, int k)
 
 /******************************************************************************
 * Cube class implementation
+******************************************************************************/
+
+/******************************************************************************
+* Constructors
 ******************************************************************************/
 
 /******************************************************************************
@@ -96,6 +104,9 @@ Cube::Cube(std::vector<int> corner_perm, std::vector<int> corner_orient,
     edge_orientation   = edge_orient;
 }
 
+/******************************************************************************
+* Functions for manipulation of the state of the cube.
+******************************************************************************/
 
 /******************************************************************************
 * Function:  Cube::perform_move
@@ -104,12 +115,12 @@ Cube::Cube(std::vector<int> corner_perm, std::vector<int> corner_orient,
 *
 * Params:    move - which move is being performed.
 *
-* Returns:   Nothing
+* Returns:   A Cube object holding the result of the move.
 *
 * Operation: Update the permutation and orientation of all the pieces according
 *            to the particular move being performed.
 ******************************************************************************/
-void Cube::perform_move(int move)
+Cube Cube::perform_move(int move)
 {
     // Local variables
     std::vector<int> corners_moved;
@@ -248,12 +259,16 @@ void Cube::perform_move(int move)
         new_edge_orientation[to] = (edge_orientation[from] + flip) % 2;
     }
 
-    // Replace the old permutations and orientations with the new ones
-    corner_permutation = new_corner_permutation;
-    corner_orientation = new_corner_orientation;
-    edge_permutation   = new_edge_permutation;
-    edge_orientation   = new_edge_orientation;
+    // Return a Cube with the new permutations and orientations.
+    Cube cube(new_corner_permutation, new_corner_orientation,
+                new_edge_permutation,   new_edge_orientation);
+    return cube;
 }
+
+/******************************************************************************
+* Implementation of normal coordinates, that is, integer values which are
+* calculated directly from the cube state.
+******************************************************************************/
 
 /******************************************************************************
 * Function:  Cube::coord_corner_orientation
@@ -263,7 +278,9 @@ void Cube::perform_move(int move)
 *
 * Params:    None
 *
-* Returns:   The value of the corner orientation coordinate.
+* Returns:   The value of the corner orientation coordinate. This coordinate is
+*            a number in the range 0..2186 which describes the orientation of
+*            the 8 corners of the cube.
 *
 * Operation: Calculates the value of the corner orientation coordinate by
 *            combining the twist of each individual corner piece into a single
@@ -290,7 +307,9 @@ int Cube::coord_corner_orientation()
 *
 * Params:    None
 *
-* Returns:   The value of the edge orientation coordinate.
+* Returns:   The value of the edge orientation coordinate. This coordinate is a
+*            number in the range 0..2047 which describes the orientation of the
+*            12 edges of the cube.
 *
 * Operation: Calculates the value of the edge orientation coordinate by
 *            combining the flip of each individual corner piece into a single
@@ -317,7 +336,9 @@ int Cube::coord_edge_orientation()
 *
 * Params:    None.
 *
-* Returns:   The value of the corner permutation coordinate.
+* Returns:   The value of the corner permutation coordinate. This coordinate is
+*            a number in the range 0..40319 which describes the permutation of
+*            the 8 corners of the cube.
 *
 * Operation: Calculates the value of the corner permutation coordinate by
 *            working out the lexicographic position of the vector which
@@ -357,7 +378,9 @@ int Cube::coord_corner_permutation()
 *
 * Params:    None.
 *
-* Returns:   The value of the sorted slice coordinate.
+* Returns:   The value of the sorted slice coordinate. This coordinate is a
+*            number in the range 0..11879 which describes the positions (order
+*            matters) of the 4 edges belonging in the slice.
 *
 * Operation: Calculates the lexicographic position x of the set of 4 positions
 *            occupied by the four slice edges, and also the lexicographic
@@ -419,7 +442,9 @@ int Cube::coord_slice_sorted(std::vector<int> edges)
 *
 * Params:    None.
 *
-* Returns:   The value of the sorted UD-slice coordinate.
+* Returns:   The value of the sorted UD-slice coordinate. This coordinate is a
+*            number in the range 0..11879 which describes the positions (order
+*            matters) of the 4 edges belonging in the UD slice.
 *
 * Operation: Calls into coord_slice_sorted with a specific set of edges for
 *            the UD-slice.
@@ -438,7 +463,9 @@ int Cube::coord_ud_sorted()
 *
 * Params:    None.
 *
-* Returns:   The value of the sorted RL-slice coordinate.
+* Returns:   The value of the sorted RL-slice coordinate. This coordinate is a
+*            number in the range 0..11879 which describes the positions (order
+*            matters) of the 4 edges belonging in the RL slice.
 *
 * Operation: Calls into coord_slice_sorted with a specific set of edges for
 *            the RL-slice.
@@ -457,10 +484,12 @@ int Cube::coord_rl_sorted()
 *
 * Params:    None.
 *
-* Returns:   The value of the sorted FB-slice coordinate.
+* Returns:   The value of the sorted FB-slice coordinate. This coordinate is a
+*            number in the range 0..11879 which describes the positions (order
+*            matters) of the 4 edges belonging in the FB slice.
 *
 * Operation: Calls into coord_slice_sorted with a specific set of edges for
-*            the -slice.
+*            the FB-slice.
 ******************************************************************************/
 int Cube::coord_fb_sorted()
 {
@@ -469,50 +498,140 @@ int Cube::coord_fb_sorted()
 }
 
 /******************************************************************************
-* Function:  Cube::coord_ud_pos
-*
-* Purpose:   Extract the unsorted UD-slice coordinate form the cube position.
-*
-* Params:    None.
-*
-* Returns:   The value of the unsorted UD-slice coordinate.
-*
-* Operation: Returns (sorted UD-slice coordinate) / 24.
+* Implementation of functions which calculate meta-coordinates from the
+* normal coordinates that define them.
 ******************************************************************************/
-int Cube::coord_ud_pos()
+
+/******************************************************************************
+* Function:  Cube::edge_permutation_calc
+*
+* Purpose:   Calculates the edge permutation coordinate from the values of the
+*            sorted RL-slice coordinate and the sorted FB-slice coordinate.
+*
+* Params:    rl_sorted - the value of the sorted RL-slice coordinate.
+*            fb_sorted - the value of the sorted FB-slice coordinate.
+*
+* Returns:   The value of the edge permutation coordinate. With the proviso
+*            that the 4 UD-slice edges are all contained in the UD-slice, this
+*            coordinate is an integer in the range 0..40319 which describes
+*            the positions of the other 8 edges of the cube.
+*
+* Operation: Calculates the edge permutation coordinate as 24 * x + y % 24,
+*            where x is the sorted RL-slice coordinate, and y is the sorted
+*            FB-slice coordinate.
+******************************************************************************/
+int Cube::edge_permutation_calc(int rl_sorted, int fb_sorted)
 {
-    return coord_ud_sorted() / 24;
+    return 24 * rl_sorted + fb_sorted % 24;
 }
 
 /******************************************************************************
-* Function:  Cube::coord_ud_perm
+* Function:  Cube::ud_unsorted_calc
 *
-* Purpose:   Extract the UD-slice permutation coordinate form the cube state.
+* Purpose:   Calculates the unsorted UD-slice coordinate from the value of the
+*            sorted UD-slice coordinate.
 *
-* Params:    None.
+* Params:    ud_sorted - the value of the sorted UD-slice coordinate.
 *
-* Returns:   The value of the unsorted UD-slice coordinate.
+* Returns:   The value of the unsorted UD-slice coordinate. This coordinate
+*            is an integer in the range 0..494 which describes the positions
+*            of the 4 edges belonging to the UD-slice without regard for the
+*            order in which they appear.
 *
-* Operation: Returns (sorted UD-slice coordinate) % 24.
+* Operation: Calculates the unsorted UD-slice coordinate as x / 24, where x is
+*            the value of the sorted UD-slice coordinate.
 ******************************************************************************/
-int Cube::coord_ud_perm()
+int Cube::ud_unsorted_calc(int ud_sorted)
 {
-    return coord_ud_sorted() % 24;
+    return ud_sorted / 24;
 }
+
+/******************************************************************************
+* Function:  Cube::ud_permutation_calc
+*
+* Purpose:   Calculates the UD-slice permutation coordinate from the value of
+*            the sorted UD-slice coordinate.
+*
+* Params:    ud_sorted - the value of the sorted UD-slice coordinate.
+*
+* Returns:   The value of the UD-slice permutation coordinate. With the proviso
+*            that the 4 UD-slice edges are all contained in the UD-slice, this
+*            coordinate is an integer in the range 0..24 which describes
+*            their positions.
+*
+* Operation: Calculates the UD-slice permutation coordinate as x % 24, where x
+*            is the sorted UD-slice coordinate.
+******************************************************************************/
+int Cube::ud_permutation_calc(int ud_sorted)
+{
+    return ud_sorted % 24;
+}
+
+/******************************************************************************
+* Implementation of meta coordinates, that is, integer values which are
+* calculated from one or more normal coordinates.
+******************************************************************************/
 
 /******************************************************************************
 * Function:  Cube::coord_edge_permutation
 *
-* Purpose:   Extract the edge permutation coordinate form the cube position.
+* Purpose:   Calculates the edge permutation coordinate from the current cube
+*            position.
 *
 * Params:    None.
 *
-* Returns:   The value of the edge permutation coordinate.
+* Returns:   The value of the edge permutation coordinate. With the proviso
+*            that the 4 UD-slice edges are all contained in the UD-slice, this
+*            coordinate is an integer in the range 0..40319 which describes
+*            the positions of the other 8 edges of the cube.
 *
-* Operation: Returns 24x + y%24, where x is the sorted RL-slice coordinate and 
-*            y is the sorted FB-slice coordinate.
+* Operation: Calculates the edge permutation coordinate as 24 * x + y % 24,
+*            where x is the sorted RL-slice coordinate, and y is the sorted
+*            FB-slice coordinate.
 ******************************************************************************/
 int Cube::coord_edge_permutation()
 {
-    return 24 * coord_rl_sorted() + coord_fb_sorted() % 24;
+    return edge_permutation_calc(coord_rl_sorted(), coord_fb_sorted());
+}
+
+/******************************************************************************
+* Function:  Cube::ud_unsorted
+*
+* Purpose:   Calculates the unsorted UD-slice coordinate from the current cube
+*            position.
+*
+* Params:    None.
+*
+* Returns:   The value of the unsorted UD-slice coordinate. This coordinate
+*            is an integer in the range 0..494 which describes the positions
+*            of the 4 edges belonging to the UD-slice without regard for the
+*            order in which they appear.
+*
+* Operation: Calculates the unsorted UD-slice coordinate as x / 24, where x is
+*            the value of the sorted UD-slice coordinate.
+******************************************************************************/
+int Cube::coord_ud_unsorted()
+{
+    return ud_unsorted_calc(coord_ud_sorted());
+}
+
+/******************************************************************************
+* Function:  Cube::ud_permutation
+*
+* Purpose:   Calculates the UD-slice permutation coordinate from the current
+*            cube position.
+*
+* Params:    None.
+*
+* Returns:   The value of the UD-slice permutation coordinate. With the proviso
+*            that the 4 UD-slice edges are all contained in the UD-slice, this
+*            coordinate is an integer in the range 0..24 which describes
+*            their positions.
+*
+* Operation: Calculates the UD-slice permutation coordinate as x % 24, where x
+*            is the sorted UD-slice coordinate.
+******************************************************************************/
+int Cube::coord_ud_permutation()
+{
+    return ud_permutation_calc(coord_ud_sorted());
 }
