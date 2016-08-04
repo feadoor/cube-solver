@@ -489,7 +489,7 @@ int Cube::coord_rl_sorted()
 *            matters) of the 4 edges belonging in the FB slice.
 *
 * Operation: Calls into coord_slice_sorted with a specific set of edges for
-*            the -slice.
+*            the FB-slice.
 ******************************************************************************/
 int Cube::coord_fb_sorted()
 {

@@ -19,7 +19,7 @@
 ******************************************************************************/
 CubeTrans cube_co_trans(PHASE_1, &Cube::coord_corner_orientation, 2187);
 CubeTrans cube_eo_trans(PHASE_1, &Cube::coord_edge_orientation, 2048);
-CubeTrans cube_cp_trans(PHASE_2, &Cube::coord_corner_permutation, 40320);
+CubeTrans cube_cp_trans(PHASE_1, &Cube::coord_corner_permutation, 40320);
 CubeTrans cube_ud_sorted_trans(PHASE_1, &Cube::coord_ud_sorted, 11880);
 CubeTrans cube_rl_sorted_trans(PHASE_1, &Cube::coord_rl_sorted, 11880);
 CubeTrans cube_fb_sorted_trans(PHASE_1, &Cube::coord_fb_sorted, 11880);
@@ -84,16 +84,4 @@ void cube_fill_all_pruning_tables()
     cube_eo_ud_prune.fill();
     cube_ep_ud_prune.fill();
     cube_cp_ud_prune.fill();
-}
-
-int main()
-{
-    cube_create_allowed_moves();
-    cube_fill_all_trans_tables();
-    cube_fill_all_pruning_tables();
-    cube_co_eo_prune.print();
-    cube_co_ud_prune.print();
-    cube_eo_ud_prune.print();
-    cube_ep_ud_prune.print();
-    cube_cp_ud_prune.print();
 }
